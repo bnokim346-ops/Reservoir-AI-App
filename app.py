@@ -2,58 +2,60 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# إعداد الصفحة
-st.set_page_config(page_title="Reservoir AI Optimization", layout="wide")
+# 1. إعداد الصفحة لتكون عريضة ومنظمة
+st.set_page_config(page_title="AI Reservoir Optimizer", layout="wide")
 
+# 2. العنوان الرئيسي
 st.title("🛢️ Intelligent AI-Based Reservoir Production Optimization")
-st.markdown("نظام ذكي متكامل لربط تقنيات الذكاء الاصطناعي بمبادئ هندسة المكامن النفطية")
+st.write("نظام ذكي متكامل لربط تقنيات الذكاء الاصطناعي بمبادئ هندسة المكامن النفطية")
 st.divider()
 
-# تقسيم الواجهة إلى عمودين (العمود الأول للمدخلات والثاني للنتائج)
-col_in, col_out = st.columns()
+# 3. تقسيم الواجهة إلى عمودين (مثل الصورة التي أعجبتكِ)
+col_sidebar, col_main = st.columns()
 
-with col_in:
+with col_sidebar:
     st.subheader("📋 Input Parameters")
     well_id = st.text_input("Project/Well Name", "Field-Alpha-01")
     
-    # أزرار المدخلات المطلوبة
+    # أزرار المدخلات المطلوبة (الضغط، المسامية، النفاذية، السعر)
     pres = st.slider("Initial Reservoir Pressure (psi)", 1000, 5000, 2640)
     por = st.slider("Porosity (%)", 5.0, 35.0, 21.3)
     prm = st.number_input("Permeability (mD)", value=159)
     oil_price = st.number_input("Oil Price per Barrel ($)", value=86)
     
-    # زر التشغيل
-    run_analysis = st.button("Run Optimization & AI Analysis", type="primary", use_container_width=True)
+    # زر التشغيل الكبير
+    run_btn = st.button("Run Optimization & AI Analysis", type="primary", use_container_width=True)
 
-# العمليات الحسابية
+# 4. العمليات الحسابية (تتم خلف الكواليس)
 months = np.arange(1, 13)
 initial_rate = (pres * (por/100) * np.sqrt(prm)) / 10
-prod_data = initial_rate * np.exp(-0.06 * months)
+prod_curve = initial_rate * np.exp(-0.06 * months)
 
-with col_out:
-    if run_analysis:
+with col_main:
+    if run_btn:
         st.subheader(f"📈 Production Forecast: {well_id}")
         
-        # إنشاء الرسم البياني
-        chart_df = pd.DataFrame({
-            'Month': months,
-            'Rate (bbl/d)': prod_data
-        }).set_index('Month')
+        # إنشاء الرسم البياني الاحترافي
+        df = pd.DataFrame({'Month': months, 'Rate (bbl/d)': prod_curve})
+        st.line_chart(df.set_index('Month'))
         
-        st.line_chart(chart_df)
-        
-        # عرض النتائج المالية والإنتاجية في مربعات
         st.divider()
-        res1, res2 = st.columns(2)
         
-        total_barrels = np.sum(prod_data) * 30.5
-        total_revenue = total_barrels * oil_price
+        # عرض النتائج في مربعات (Metrics)
+        res_col1, res_col2 = st.columns(2)
+        total_prod = np.sum(prod_curve) * 30.5
+        revenue = total_prod * oil_price
         
-        with res1:
-            st.metric("Annual Oil Production", f"{total_barrels:,.0f} Barrels")
-        with res2:
-            st.metric("Estimated Annual Revenue", f"${total_revenue:,.0f}")
+        with res_col1:
+            st.metric("Annual Oil Production", f"{total_prod:,.0f} Barrels")
+        with res_col2:
+            st.metric("Estimated Annual Revenue", f"${revenue:,.0f}")
             
-        st.success("AI Insight: Reservoir performance is optimal based on current permeability.")
+        st.success("✅ AI Analysis Complete: The reservoir shows high potential for optimization.")
     else:
-        st.info("👈 قم بتعديل البيانات واضغط على زر التحليل لعرض النتائج")
+        # رسالة تظهر قبل الضغط على الزر
+        st.info("👈 الرجاء ضبط القيم من اليسار ثم الضغط على زر التحليل لعرض النتائج")
+
+# 5. التذييل
+st.markdown("---")
+st.caption("Developed by Baneen Hussam | Reservoir AI Project 2026")
