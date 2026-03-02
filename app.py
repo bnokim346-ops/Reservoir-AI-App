@@ -10,7 +10,7 @@ st.title("🛢️ Intelligent AI-Based Reservoir Production Optimization")
 st.markdown("---")
 
 # تقسيم الصفحة إلى جزئين: يسار للمدخلات ويمين للنتائج
-col_inputs, col_display = st.columns(, gap="large")
+
 
 with col_inputs:
     st.subheader("📋 Input Parameters")
