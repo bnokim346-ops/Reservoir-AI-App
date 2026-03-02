@@ -1,61 +1,54 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 
-# 1. إعداد الصفحة لتكون عريضة ومنظمة
-st.set_page_config(page_title="AI Reservoir Optimizer", layout="wide")
+st.set_page_config(page_title="AI Reservoir Calculator", layout="wide")
 
-# 2. العنوان الرئيسي
-st.title("🛢️ Intelligent AI-Based Reservoir Production Optimization")
-st.write("نظام ذكي متكامل لربط تقنيات الذكاء الاصطناعي بمبادئ هندسة المكامن النفطية")
-st.divider()
+st.title("Intelligent AI-Based Reservoir Production Optimization")
 
-# 3. تقسيم الواجهة إلى عمودين (مثل الصورة التي أعجبتكِ)
-col_sidebar, col_main = st.columns()
+st.write("Enter reservoir properties to estimate porosity, permeability, pressure and oil value.")
 
-with col_sidebar:
-    st.subheader("📋 Input Parameters")
-    well_id = st.text_input("Project/Well Name", "Field-Alpha-01")
-    
-    # أزرار المدخلات المطلوبة (الضغط، المسامية، النفاذية، السعر)
-    pres = st.slider("Initial Reservoir Pressure (psi)", 1000, 5000, 2640)
-    por = st.slider("Porosity (%)", 5.0, 35.0, 21.3)
-    prm = st.number_input("Permeability (mD)", value=159)
-    oil_price = st.number_input("Oil Price per Barrel ($)", value=86)
-    
-    # زر التشغيل الكبير
-    run_btn = st.button("Run Optimization & AI Analysis", type="primary", use_container_width=True)
+# تقسيم الصفحة الى عمودين (هنا التصحيح)
+col1, col2 = st.columns(2)
 
-# 4. العمليات الحسابية (تتم خلف الكواليس)
-months = np.arange(1, 13)
-initial_rate = (pres * (por/100) * np.sqrt(prm)) / 10
-prod_curve = initial_rate * np.exp(-0.06 * months)
+with col1:
+    st.header("Input Data")
 
-with col_main:
-    if run_btn:
-        st.subheader(f"📈 Production Forecast: {well_id}")
-        
-        # إنشاء الرسم البياني الاحترافي
-        df = pd.DataFrame({'Month': months, 'Rate (bbl/d)': prod_curve})
-        st.line_chart(df.set_index('Month'))
-        
-        st.divider()
-        
-        # عرض النتائج في مربعات (Metrics)
-        res_col1, res_col2 = st.columns(2)
-        total_prod = np.sum(prod_curve) * 30.5
-        revenue = total_prod * oil_price
-        
-        with res_col1:
-            st.metric("Annual Oil Production", f"{total_prod:,.0f} Barrels")
-        with res_col2:
-            st.metric("Estimated Annual Revenue", f"${revenue:,.0f}")
-            
-        st.success("✅ AI Analysis Complete: The reservoir shows high potential for optimization.")
-    else:
-        # رسالة تظهر قبل الضغط على الزر
-        st.info("👈 الرجاء ضبط القيم من اليسار ثم الضغط على زر التحليل لعرض النتائج")
+    bulk_volume = st.number_input("Bulk Volume (m3)", min_value=0.0, value=1000.0)
+    pore_volume = st.number_input("Pore Volume (m3)", min_value=0.0, value=200.0)
+    flow_rate = st.number_input("Flow Rate (m3/day)", min_value=0.0, value=150.0)
+    viscosity = st.number_input("Oil Viscosity (cp)", min_value=0.1, value=1.0)
+    area = st.number_input("Area (m2)", min_value=0.1, value=50.0)
+    length = st.number_input("Length (m)", min_value=0.1, value=10.0)
+    oil_price = st.number_input("Oil Price ($/barrel)", min_value=1.0, value=70.0)
+    oil_volume_barrels = st.number_input("Oil Volume (barrels)", min_value=0.0, value=10000.0)
 
-# 5. التذييل
-st.markdown("---")
-st.caption("Developed by Baneen Hussam | Reservoir AI Project 2026")
+    calculate = st.button("Calculate")
+
+with col2:
+    st.header("Results")
+
+    if calculate:
+
+        # 1️⃣ Porosity
+        if bulk_volume > 0:
+            porosity = pore_volume / bulk_volume
+        else:
+            porosity = 0
+
+        # 2️⃣ Permeability (Darcy approximation)
+        if area * viscosity > 0:
+            permeability = (flow_rate * viscosity * length) / area
+        else:
+            permeability = 0
+
+        # 3️⃣ Reservoir Pressure (simplified estimation)
+        pressure = flow_rate * viscosity * 10  # تبسيط لغرض المشروع
+
+        # 4️⃣ Oil Value
+        oil_value = oil_price * oil_volume_barrels
+
+        st.success("Calculation Completed Successfully ✅")
+
+        st.write(f"Porosity: {porosity:.4f}")
+        st.write(f"Permeability: {permeability:.4f} mD (approx)")
+        st.write(f"Estimated Reservoir Pressure: {pressure:.2f} psi (approx)")
+        st.write(f"Estimated Oil Value: ${oil_value:,.2f}")
